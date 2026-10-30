@@ -169,3 +169,29 @@ body.page-leaving {
     transition: none;
   }
 }
+
+/* THE FIC SHELF — CREATOR CREDIT */
+
+.site-credits {
+  text-align: center;
+  padding: 12px 20px 30px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 11px;
+  color: #9b90a3;
+}
+
+.site-credits p {
+  margin: 0;
+}
+
+.site-credits a {
+  color: #765b87;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.site-credits a:hover {
+  color: #a885b6;
+  text-decoration: underline;
+}
