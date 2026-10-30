@@ -87,3 +87,85 @@ body * {
   font-weight: 600;
   text-decoration: underline;
 }
+
+/* ==================================
+   THE FIC SHELF — PAGE TRANSITIONS
+   ================================== */
+
+/* Page entrance */
+body {
+  animation: pageEnter 0.45s ease-out both;
+}
+
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Smooth fic card interactions */
+.fic-card {
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.fic-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(70, 45, 85, 0.1);
+}
+
+/* Smooth buttons */
+button,
+.btn {
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+/* Smooth modal appearance */
+dialog[open] {
+  animation: modalEnter 0.28s ease-out both;
+}
+
+@keyframes modalEnter {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  body,
+  .fic-card,
+  button,
+  .btn,
+  dialog[open] {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+body.page-leaving {
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.page-leaving {
+    transition: none;
+  }
+}
