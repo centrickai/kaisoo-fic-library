@@ -2,15 +2,10 @@
 (() => {
   'use strict';
   const PIN = '1288'; // CHANGE THIS. Do not use a sensitive PIN.
-  const KEY = 'ficShelfPinUnlocked';
-  const isUnlocked = () => sessionStorage.getItem(KEY) === 'yes';
+  //const KEY = 'ficShelfPinUnlocked';
+  //const isUnlocked = () => sessionStorage.getItem(KEY) === 'yes';
 
   function init() {
-    if (isUnlocked()) {
-      document.documentElement.classList.remove('fic-pin-locked');
-      return;
-    }
-
     document.documentElement.classList.add('fic-pin-locked');
 
     const overlay = document.createElement('div');
@@ -43,7 +38,7 @@
     document.getElementById('ficPinForm').addEventListener('submit', event => {
       event.preventDefault();
       if (input.value === PIN) {
-        sessionStorage.setItem(KEY, 'yes');
+        //sessionStorage.setItem(KEY, 'yes');
         overlay.classList.add('fic-pin-unlocking');
         document.documentElement.classList.remove('fic-pin-locked');
         setTimeout(() => overlay.remove(), 280);
