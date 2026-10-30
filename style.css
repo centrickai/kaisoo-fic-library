@@ -62,3 +62,28 @@ textarea {
 body * {
   font-family: 'Poppins', sans-serif;
 }
+
+.author-notice {
+  max-width: 850px;
+  margin: 60px auto 30px;
+  padding: 24px;
+  text-align: center;
+  color: #8b8490;
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  line-height: 1.9;
+  border-top: 1px solid #e9e0e8;
+}
+
+.author-notice-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #765b87;
+  margin-bottom: 10px;
+}
+
+.author-notice a {
+  color: #765b87;
+  font-weight: 600;
+  text-decoration: underline;
+}
