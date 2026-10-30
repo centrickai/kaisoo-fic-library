@@ -1,0 +1,2 @@
+[functions.verify-shelf-pin]
+verify_jwt = false

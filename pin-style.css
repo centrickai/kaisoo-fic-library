@@ -1,39 +1,36 @@
-/* Fic Shelf visual-only PIN screen: append to the end of style.css */
-html.fic-pin-locked { overflow: hidden; }
+/* Load AFTER style.css. Keep exactly one copy of these PIN styles. */
+html.fic-pin-locked,
+html.fic-pin-locked body { overflow: hidden !important; }
+html.fic-pin-locked body { animation: none !important; transform: none !important; }
+html.fic-pin-locked body > :not(#ficPinOverlay) { visibility: hidden !important; }
 #ficPinOverlay {
-  position: fixed; inset: 0; z-index: 2147483647;
-  display: grid; place-items: center; padding: 20px;
-  background: #FAF7F5;
-  font-family: 'Poppins', sans-serif;
-  transition: opacity .28s ease;
+  position: fixed !important; inset: 0 !important; z-index: 2147483647 !important;
+  width: 100%; height: 100vh; height: 100dvh;
+  display: flex !important; align-items: center; justify-content: center;
+  background: #FAF7F5; padding: 20px; overflow-y: auto;
+  box-sizing: border-box; opacity: 1;
+  font-family: Poppins, sans-serif; color: #35221E;
 }
-#ficPinOverlay.fic-pin-unlocking { opacity: 0; pointer-events: none; }
-.fic-pin-card {
-  width: min(100%, 430px); padding: 42px 32px;
-  border-radius: 22px; text-align: center; background: #fff;
-  border: 1px solid #E8D8D4;
-  box-shadow: 0 20px 60px rgba(53,34,30,.1);
-  color: #35221E;
+#ficPinOverlay .fic-pin-card {
+  width: 100%; max-width: 420px; margin: auto; padding: 38px 30px;
+  background: white; border: 1px solid #E8D8D4;
+  border-radius: 20px; box-shadow: 0 20px 60px rgba(53,34,30,.12); text-align: center;
 }
-.fic-pin-mark { color: #C47F96; font-size: 35px; }
-.fic-pin-eyebrow { color: #9A506B; font-size: 10px; font-weight: 700; letter-spacing: .17em; }
-.fic-pin-card h1 { font-size: clamp(23px, 5vw, 30px); line-height: 1.25; color: #35221E; }
+.fic-pin-mark { font-size: 26px; color: #C47F96; }
+.fic-pin-eyebrow { margin: 8px 0; font-weight: 700; font-size: 10px; letter-spacing: 1.6px; color: #9A506B; }
+#ficPinTitle { font-size: clamp(22px, 5vw, 30px); line-height: 1.3; margin: 12px 0; }
 .fic-pin-description { font-size: 13px; color: #65483F; }
-.fic-pin-label { display: block; margin: 23px 0 8px; font-size: 12px; font-weight: 600; }
+.fic-pin-hint { color: #9A506B; font-size: 14px; font-weight: 500; margin: 10px 0 22px; }
+.fic-pin-label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 8px; }
 #ficPinInput {
-  display: block; width: 100%; max-width: 210px; margin: auto;
-  padding: 12px; font-size: 23px; text-align: center; letter-spacing: .5em;
-  border: 1px solid #E8D8D4; border-radius: 10px; color: #35221E;
-  background: #FFFDFC;
+  display: block; width: 100%; max-width: 220px; margin: 0 auto;
+  text-align: center; letter-spacing: .5em; font-size: 22px; padding: 10px;
+  border-radius: 9px; border: 1px solid #E8D8D4; background: white; color: #35221E;
 }
-#ficPinInput:focus { outline: 2px solid #C47F96; outline-offset: 2px; }
-.fic-pin-error { min-height: 22px; color: #9D3440; font-size: 12px; margin: 8px 0; }
-.fic-pin-submit {
-  display: block; width: 100%; max-width: 250px; margin: 5px auto 0;
-  padding: 12px 18px; border-radius: 10px; border: 0;
-  background: #35221E; color: white; font-weight: 650;
-}
+#ficPinInput:focus-visible { outline: 2px solid #C47F96; outline-offset: 2px; }
+.fic-pin-error { color: #9A343A; font-size: 12px; min-height: 20px; margin: 10px 0; }
+.fic-pin-submit { background: #35221E; color: white; border: 0; border-radius: 9px; padding: 11px 20px; font-weight: 600; }
 .fic-pin-submit:hover { background: #4B3029; }
-@media (prefers-reduced-motion: reduce) {
-  #ficPinOverlay { transition: none; }
-}
+.fic-pin-submit:disabled { opacity: .6; }
+#ficPinOverlay.fic-pin-unlocking { opacity: 0 !important; pointer-events: none; transition: opacity 280ms ease; }
+@media (prefers-reduced-motion: reduce) { #ficPinOverlay.fic-pin-unlocking { transition: none; } }
