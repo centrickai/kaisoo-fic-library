@@ -1,7 +1,7 @@
 /* The Fic Shelf: visual-only 4-digit PIN gate (NOT security). */
 (() => {
   'use strict';
-  const PIN = '1234'; // CHANGE THIS. Do not use a sensitive PIN.
+  const PIN = '1288'; // CHANGE THIS. Do not use a sensitive PIN.
   const KEY = 'ficShelfPinUnlocked';
   const isUnlocked = () => sessionStorage.getItem(KEY) === 'yes';
 
@@ -11,6 +11,8 @@
       return;
     }
 
+    document.documentElement.classList.add('fic-pin-locked');
+
     const overlay = document.createElement('div');
     overlay.id = 'ficPinOverlay';
     overlay.setAttribute('role', 'dialog');
@@ -19,9 +21,10 @@
     overlay.innerHTML = `
       <div class="fic-pin-card">
         <div class="fic-pin-mark" aria-hidden="true">✦</div>
-        <p class="fic-pin-eyebrow">A LITTLE SOMETHING FOR READERS</p>
-        <h1 id="ficPinTitle">Welcome to The Fic Shelf.</h1>
-        <p class="fic-pin-description">Enter the 4-digit PIN to browse the collection.</p>
+        <p class="fic-pin-eyebrow"></p>
+        <h1 id="ficPinTitle"></h1>
+        <p class="fic-pin-description"></p>
+        <p class="fic-pin-hint">Hint: 🐧🐻🥋🔢</p>
         <form id="ficPinForm" autocomplete="off">
           <label for="ficPinInput" class="fic-pin-label">4-digit PIN</label>
           <input id="ficPinInput" type="password" inputmode="numeric"

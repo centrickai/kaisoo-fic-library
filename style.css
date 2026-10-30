@@ -285,3 +285,76 @@ a:not(.download-link) { color: #9A506B; }
   outline-offset: 1px;
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; } }
+
+/* ===============================================
+   THE FIC SHELF — PIN SCREEN (single rule set)
+   Matches pin-lock.js: #ficPinOverlay, .fic-pin-card
+   =============================================== */
+
+/* The body entrance animation uses transform, which changes the containing
+   block for fixed children. Disable it while the PIN screen is active. */
+html.fic-pin-locked,
+html.fic-pin-locked body {
+  overflow: hidden !important;
+}
+html.fic-pin-locked body {
+  animation: none !important;
+  transform: none !important;
+}
+
+html.fic-pin-locked body > :not(#ficPinOverlay) {
+  visibility: hidden;
+}
+
+#ficPinOverlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2147483647 !important;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 20px;
+  background: var(--bg);
+  opacity: 1;
+  visibility: visible;
+  animation: none !important;
+}
+
+#ficPinOverlay .fic-pin-card {
+  width: 100%;
+  max-width: 420px;
+  margin: auto;
+  padding: 38px 30px;
+  text-align: center;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(53, 34, 30, .12);
+}
+
+.fic-pin-hint {
+  margin: 10px 0 22px;
+  color: #9A506B;
+  font: 500 14px/1.6 Poppins, sans-serif;
+  letter-spacing: .3px;
+}
+
+/* The animation must override the overlay's default opacity. */
+#ficPinOverlay.fic-pin-unlocking {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 280ms ease;
+}
+
+@media (max-width: 480px) {
+  #ficPinOverlay { padding: 16px; }
+  #ficPinOverlay .fic-pin-card { padding: 30px 22px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #ficPinOverlay.fic-pin-unlocking { transition: none; }
+}

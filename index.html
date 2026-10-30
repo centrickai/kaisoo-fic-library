@@ -4,7 +4,9 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>🐻🐧 kaisoo fic library</title><link rel="stylesheet" href="style.css"><script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script defer src="config.js"></script><script defer src="app.js"></script><script defer src="tag-picker.js"></script>
 </head>
+<script src="pin-lock.js"></script>
 <body>
+  
   <header class="topbar"><div class="logo"><span class="symbol">🐻🐧</span><span>kaisoo fic library</span></div><span class="subhead"></span></header>
   <main class="shell">
     <section class="toolbar"><div class="search-wrap"><span>⌕</span><input id="search" placeholder="Search titles, authors, summaries, tags…" aria-label="Search fics"></div><select id="sourceFilter" aria-label="Filter by source"><option value="">All sources</option><option value="ao3">AO3</option><option value="unsorted">Unknown / Unsorted</option></select><div class="tag-picker" id="tagPicker"><select id="tagFilter" class="tag-picker-native" aria-label="Filter by detected tag" tabindex="-1"><option value="">All tags</option></select><button type="button" class="tag-picker-trigger" id="tagPickerTrigger" aria-haspopup="listbox" aria-expanded="false"><span id="tagPickerLabel">All tags</span><span aria-hidden="true">⌄</span></button><div id="tagPickerPanel" class="tag-picker-panel" hidden><input id="tagPickerSearch" type="search" autocomplete="off" placeholder="Search tags…" aria-label="Search tags"><div id="tagPickerList" class="tag-picker-list" role="listbox" aria-label="Detected tags"></div></div></div><select id="fandomFilter" aria-label="Filter by fandom"><option value="">All fandoms</option></select><select id="sort" aria-label="Sort fics"> <option value="title" selected>Title A–Z</option><option value="author">Author A–Z</option><option value="words">Longest first</option></select></section>
