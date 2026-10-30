@@ -18,6 +18,54 @@ function showSimilar(f){const container=$('similarFics');const results=similarFo
 const count = n => Number(n)>0?Number(n).toLocaleString('en-US'):'Unknown';
 function tags(f,full=false){const t=[...arr(f.relationships),...arr(f.characters),...arr(f.tags)];const v=full?t:t.slice(0,5);return v.map(x=>`<span class="tag">${esc(x)}</span>`).join('')+(!full&&t.length>5?`<span class="tag more">+${t.length-5}</span>`:'');}
 
+
+
+/* THE FIC SHELF — ANIMATION HELPERS */
+
+function animateFicResults() {
+  const grid = document.querySelector("#grid");
+
+  if (!grid) return;
+
+  grid.classList.remove("fic-results-enter");
+
+  // Restart animation after the DOM updates
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      grid.classList.add("fic-results-enter");
+    });
+  });
+}
+
+function animateFicDetails() {
+  const dialog = document.querySelector("#detailDialog");
+
+  if (!dialog) return;
+
+  const content = dialog.querySelector(".detail-content") || dialog;
+
+  content.classList.remove("fic-detail-enter");
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      content.classList.add("fic-detail-enter");
+    });
+  });
+
+  const modal = document.querySelector("#detailDialog");
+
+if (modal) {
+  modal.scrollTo({
+    top: 0,
+    behavior: window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches ? "instant" : "smooth"
+  });
+}
+}
+
+
+
 // Build a live tag selector from the records returned by Supabase.
 // A category prefix keeps identically named relationship/character/freeform tags distinct.
 const TAG_FIELDS = [
@@ -72,6 +120,7 @@ function render(){
  $('empty').classList.toggle('hidden',filtered.length>0);
  $('empty').querySelector('h2').textContent=fics.length?'No matching stories':'No fics yet';
  $('empty').querySelector('p').textContent=fics.length?'Try a different search or filter.':'No published works are available yet.';
+animateFicResults();
 }
 function detail(id){const f=fics.find(x=>x.id===id);if(!f)return;currentId=String(id);updateDetailControls(currentId);showSimilar(f);
  $('detailFilename').textContent=`${(f.format||'').toUpperCase()} · ${f.title||''}`;$('detailTitle').textContent=f.title;$('detailAuthor').textContent='by '+(f.author||'Unknown author');$('detailTags').innerHTML=tags(f,true);$('detailSummary').textContent=f.summary||'No summary provided.';
@@ -83,6 +132,7 @@ function detail(id){const f=fics.find(x=>x.id===id);if(!f)return;currentId=Strin
  downloadUrl.searchParams.set('download',originalName);
  link.href=downloadUrl.toString();link.removeAttribute('download');link.removeAttribute('target');link.setAttribute('rel','noopener noreferrer');link.hidden=false;
  $('detailDialog').showModal();
+animateFicDetails();
 }
 async function load(){const {data,error}=await client.from('fics').select('*').eq('published',true).order('created_at',{ascending:false}).limit(1000);if(error)throw error;fics=data||[];refreshTagOptions();render()}
 async function init(){
