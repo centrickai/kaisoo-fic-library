@@ -74,7 +74,7 @@ function render(){
  $('empty').querySelector('p').textContent=fics.length?'Try a different search or filter.':'No published works are available yet.';
 }
 function detail(id){const f=fics.find(x=>x.id===id);if(!f)return;currentId=String(id);updateDetailControls(currentId);showSimilar(f);
- $('detailFilename').textContent=`${(f.format||'').toUpperCase()} · ${f.filename||''}`;$('detailTitle').textContent=f.title;$('detailAuthor').textContent='by '+(f.author||'Unknown author');$('detailTags').innerHTML=tags(f,true);$('detailSummary').textContent=f.summary||'No summary provided.';
+ $('detailFilename').textContent=`${(f.format||'').toUpperCase()} · ${f.title||''}`;$('detailTitle').textContent=f.title;$('detailAuthor').textContent='by '+(f.author||'Unknown author');$('detailTags').innerHTML=tags(f,true);$('detailSummary').textContent=f.summary||'No summary provided.';
  $('detailMeta').textContent=`${count(f.words)} words · ${f.rating||'Rating unknown'}${f.category?' · '+f.category:''}${arr(f.warnings).length?' · '+f.warnings.join(', '):''}${f.chapters?' · '+f.chapters:''}${f.published?' · Published '+f.published:''}`;
  const link=$('downloadBtn');
  const publicUrl=client.storage.from(cfg.bucket).getPublicUrl(f.file_path).data.publicUrl;
