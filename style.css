@@ -497,3 +497,114 @@ body { width: 100%; min-width: 0; }
 @media (prefers-reduced-motion: reduce) {
   .fic-card, .reader-control, .tag-picker-trigger { transition: none !important; }
 }
+
+
+/* THE FIC SHELF — MOBILE FIC TILE OVERFLOW FIX
+   Paste at the VERY END of style.css, after the previous mobile CSS. */
+
+/* Prevent card content from forcing the grid wider than its container. */
+.library,
+.compact-library,
+.library > .fic-card,
+.compact-library > .fic-card,
+.fic-card > *,
+.fic-card .card-top,
+.fic-card .card-badges,
+.fic-card .tags,
+.fic-card .card-bottom {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.library,
+.compact-library { width: 100%; }
+.fic-card { width: 100%; box-sizing: border-box; }
+
+/* Wrap long titles, summaries, authors, and tag values. */
+.fic-card h3,
+.fic-card .byline,
+.fic-card .card-summary,
+.fic-card .fandom,
+.fic-card .tag,
+.fic-card .card-bottom,
+.fic-card .status {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+.fic-card .tag { white-space: normal; max-width: 100%; }
+.fic-card .tags { flex-wrap: wrap; }
+.fic-card .card-top { flex-wrap: wrap; gap: 6px; }
+.fic-card .card-badges { flex: 0 1 auto; flex-wrap: wrap; justify-content: flex-end; }
+.fic-card .fandom { flex: 1 1 125px; }
+.fic-card .card-bottom { flex-wrap: wrap; }
+
+@media (max-width: 600px) {
+  /* Both display modes must remain one column on phones. */
+  .library,
+  .library.compact-library {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 12px;
+  }
+
+  /* Explicitly reset desktop compact view's three-column card grid. */
+  .library .fic-card,
+  .library.compact-library .fic-card {
+    display: flex !important;
+    flex-direction: column;
+    grid-template-columns: none !important;
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    padding: 16px;
+    gap: 5px;
+  }
+
+  .library .fic-card > *,
+  .library.compact-library .fic-card > * {
+    grid-column: auto !important;
+    grid-row: auto !important;
+    min-width: 0;
+    max-width: 100%;
+    width: auto;
+  }
+
+  .library .fic-card .card-top,
+  .library.compact-library .fic-card .card-top {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .library .fic-card .card-summary,
+  .library.compact-library .fic-card .card-summary {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+    margin: 4px 0 10px;
+  }
+
+  .library.compact-library .fic-card .card-summary {
+    -webkit-line-clamp: 2;
+  }
+
+  .library .fic-card .card-bottom,
+  .library.compact-library .fic-card .card-bottom {
+    width: 100%;
+    margin-top: auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .library .fic-card .tags,
+  .library.compact-library .fic-card .tags {
+    width: 100%;
+    max-height: none;
+    overflow: visible;
+  }
+}
