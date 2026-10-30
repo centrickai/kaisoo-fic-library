@@ -24,6 +24,7 @@ create table if not exists public.fics (
   chapters text not null default '',
   published_date date,
   source_url text not null default '',
+  source_type text not null default 'unsorted' check (source_type in ('ao3','unsorted')),
   sha256 text unique,
   published boolean not null default false,
   created_at timestamptz not null default now()

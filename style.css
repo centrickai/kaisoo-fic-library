@@ -5,3 +5,23 @@ a.download-link {display:inline-flex;align-items:center;justify-content:center;t
 a.download-link:hover {background:#634b77}
 a.download-link[hidden] {display:none}
 .auth-panel{max-width:480px;margin:65px auto;background:#fff;padding:38px;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow)}.auth-panel h1{font:700 31px Georgia,serif}.auth-panel label{display:block;font-weight:600;margin:15px 0}.auth-panel input{display:block;width:100%;border:1px solid var(--line);border-radius:9px;padding:12px;margin-top:5px}.auth-panel .primary{margin-top:8px}.error{color:#9c3333;font-size:13px;white-space:pre-wrap}.small-link{text-decoration:none;padding:7px 12px;border:1px solid #dcd1e3;border-radius:9px;font-size:13px}.admin-actions{margin-top:auto;display:flex;flex-wrap:wrap;gap:7px}.admin-actions button{font-size:12px;padding:7px 11px}.admin-card{cursor:default;min-height:230px}.progress-row{align-items:center}.edit-dialog label input[type=checkbox]{margin-right:7px}.admin-card .status{font-size:11px;font-weight:bold;color:var(--accent)}
+
+/* Controlled, accessible tag picker: avoids enormous native dropdown menus. */
+.toolbar{flex-wrap:wrap;align-items:stretch}
+.toolbar>.search-wrap{flex:2 1 260px}
+.toolbar>select,.toolbar>.tag-picker{flex:1 1 155px;min-width:0;max-width:none}
+.toolbar>.tag-picker{position:relative}
+.tag-picker-native{display:none!important}
+.tag-picker-trigger{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;height:100%;min-height:48px;padding:10px 12px;border:1px solid var(--line);background:white;color:#574f58;border-radius:10px;text-align:left;font-weight:400}
+.tag-picker-trigger span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.tag-picker-trigger:focus-visible,.tag-picker-panel input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.tag-picker-panel{position:absolute;left:0;top:calc(100% + 5px);width:min(380px,calc(100vw - 30px));max-width:calc(100vw - 30px);z-index:50;padding:9px;border:1px solid var(--line);border-radius:12px;background:white;box-shadow:0 15px 45px #2c1c3440}
+.tag-picker-panel[hidden]{display:none}
+.tag-picker-panel input{display:block;width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:white;color:var(--ink);margin:0 0 8px}
+.tag-picker-list{max-height:min(330px,45vh);overflow-y:auto;overscroll-behavior:contain}
+.tag-picker-group{font-size:11px;color:var(--accent);font-weight:750;padding:11px 9px 4px;letter-spacing:.04em;text-transform:uppercase}
+.tag-picker-item{border:0;border-radius:7px;background:transparent;display:block;width:100%;text-align:left;padding:8px 9px;color:var(--ink);font-size:12px;line-height:1.35;font-weight:400;overflow-wrap:anywhere}
+.tag-picker-item:hover,.tag-picker-item:focus-visible{background:var(--accent-soft)}
+.tag-picker-item[aria-selected=true]{background:var(--accent-soft);color:var(--accent);font-weight:650}
+.tag-picker-empty{padding:13px;color:var(--muted);font-size:12px}
+@media(max-width:600px){.toolbar>.search-wrap{flex-basis:100%}.toolbar>select,.toolbar>.tag-picker{flex:1 1 calc(50% - 8px)}}
