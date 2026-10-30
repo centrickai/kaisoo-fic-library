@@ -1,4 +1,4 @@
-/* The Fic Shelf: visual-only 4-digit PIN gate (NOT security). */
+/* visual-only 4-digit PIN gate (NOT security). */
 (() => {
   'use strict';
   const PIN = '1288'; // CHANGE THIS. Do not use a sensitive PIN.
