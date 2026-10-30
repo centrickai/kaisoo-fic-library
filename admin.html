@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>The Fic Shelf · Local Admin</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mammoth@1.9.1/mammoth.browser.min.js"></script>
+  <script defer src="admin.js"></script>
+</head>
+<body>
+  <header class="topbar"><div class="logo"><span class="symbol">✦</span><span>The Fic Shelf</span></div><span class="subhead">local publishing workspace</span><button id="exportBtn" class="subtle" title="Export your catalog as JSON">Export public website ZIP</button></header>
+  <main class="shell">
+    <section class="hero"><p class="eyebrow">LOCAL ADMIN · DO NOT UPLOAD THIS PAGE</p><h1>Manage your fic catalog.</h1><p>Import originals, review metadata, then export a complete public website ZIP.</p><div class="hero-actions"><button id="importBtn" class="primary">＋ Import fics</button><button id="folderBtn" class="outlined">Import folder</button><input id="fileInput" type="file" multiple accept=".epub,.html,.htm,.pdf,.txt,.docx" hidden><input id="folderInput" type="file" multiple webkitdirectory directory hidden></div><p class="fineprint">EPUB, HTML, PDF, TXT & DOCX · Works locally in your browser · Metadata is best-effort</p></section>
+    <section id="progress" class="progress hidden" aria-live="polite"><div class="progress-row"><strong id="progressText">Importing…</strong><span id="progressCount"></span></div><div class="progress-track"><div id="progressFill"></div></div></section>
+    <section class="toolbar"><div class="search-wrap"><span>⌕</span><input id="search" placeholder="Search titles, authors, summaries, tags…" aria-label="Search fics"></div><select id="fandomFilter" aria-label="Filter by fandom"><option value="">All fandoms</option></select><select id="statusFilter" aria-label="Filter reading status"><option value="">All statuses</option><option>Unread</option><option>Reading</option><option>Finished</option></select><select id="sort" aria-label="Sort fics"><option value="added">Recently added</option><option value="title">Title A–Z</option><option value="author">Author A–Z</option><option value="words">Longest first</option></select></section>
+    <div class="list-heading"><h2>Your library <span id="ficCount">0</span></h2><span id="note"></span></div><div id="library" class="library"></div><div id="empty" class="empty"><div class="empty-symbol">✧</div><h2>Your shelf is waiting</h2><p>Import your offline fics. We'll extract available metadata and build your searchable collection.</p></div>
+  </main>
+  <dialog id="detailDialog" class="detail-dialog"><div class="dialog-body"><button class="close" id="closeDetail" aria-label="Close">×</button><p id="detailFilename" class="eyebrow"></p><h2 id="detailTitle"></h2><p class="muted" id="detailAuthor"></p><div id="detailTags" class="tags"></div><p id="detailSummary" class="summary"></p><div class="detail-meta" id="detailMeta"></div><div class="action-row"><button id="readBtn" class="primary">Read fic</button><button id="editBtn" class="outlined">Edit metadata</button><button id="favoriteBtn" class="outlined">♡ Favorite</button><button id="deleteBtn" class="danger">Delete</button></div></div></dialog>
+  <dialog id="editDialog" class="edit-dialog"><form id="editForm" class="dialog-body"><button type="button" id="closeEdit" class="close" aria-label="Close">×</button><h2>Edit metadata</h2><label>Title<input id="editTitle" required></label><label>Author<input id="editAuthor"></label><label>Fandom<input id="editFandom"></label><label>Relationships <small>(comma-separated)</small><input id="editRelationships"></label><label>Characters <small>(comma-separated)</small><input id="editCharacters"></label><label>Additional tags <small>(comma-separated)</small><textarea id="editTags" rows="3"></textarea></label><label>Summary<textarea id="editSummary" rows="5"></textarea></label><label>Reading status<select id="editStatus"><option>Unread</option><option>Reading</option><option>Finished</option></select></label><div class="action-row"><button type="submit" class="primary">Save changes</button><button type="button" id="cancelEdit" class="outlined">Cancel</button></div></form></dialog>
+  <dialog id="readerDialog" class="reader-dialog"><div class="reader-head"><button id="backReader" class="outlined">← Back</button><div><h2 id="readerTitle"></h2><p id="readerAuthor"></p></div><button id="increaseFont" class="outlined" title="Increase font">A+</button><button id="decreaseFont" class="outlined" title="Decrease font">A−</button></div><article id="readerContent" class="reader-content"></article></dialog>
+  <footer>Admin workspace — keep admin.html and admin.js on your own computer.</footer>
+</body>
+</html>
