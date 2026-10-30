@@ -1,8 +1,162 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>The Fic Shelf · Admin</title><link rel="stylesheet" href="style.css"><script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script defer src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script><script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/mammoth@1.9.1/mammoth.browser.min.js"></script><script defer src="config.js"></script><script defer src="extractor.js"></script><script defer src="admin.js"></script><script defer src="tag-picker.js"></script></head><body>
-<header class="topbar"><div class="logo"><span class="symbol">✦</span>The Fic Shelf</div><span class="subhead">secure admin dashboard</span><a href="index.html" class="outlined small-link">Public website</a><button id="logout" class="subtle hidden">Sign out</button></header>
-<main class="shell"><section id="loginView" class="auth-panel"><p class="eyebrow">ADMIN ONLY</p><h1>Sign in to your shelf.</h1><form id="loginForm"><label>Email<input id="email" type="email" autocomplete="username" required></label><label>Password<input id="password" type="password" autocomplete="current-password" required></label><button class="primary" type="submit">Sign in</button></form><p id="loginError" class="error" role="alert"></p><p class="fineprint">Your account must also be authorized in the admin_users database table.</p></section>
-<div id="adminView" class="hidden"><section class="hero"><p class="eyebrow">ADMIN DASHBOARD</p><h1>Manage your fic catalog.</h1><p>Import files, review extracted tags and summaries, edit metadata, and publish to readers instantly.</p><div class="hero-actions"><button id="importBtn" class="primary">＋ Import fics</button><button id="folderBtn" class="outlined">Import folder</button><input id="fileInput" type="file" multiple accept=".epub,.html,.htm,.pdf,.txt,.docx" hidden><input id="folderInput" type="file" multiple webkitdirectory directory hidden></div><p class="fineprint">EPUB, PDF, HTML, TXT, DOCX · Browser-side extraction · Supabase cloud storage</p></section>
-<section id="progress" class="progress hidden" aria-live="polite"><div class="progress-row"><strong id="progressText">Importing...</strong><span id="progressCount"></span></div><div class="progress-track"><div id="progressFill"></div></div></section><p id="adminMessage" role="status"></p>
-<section class="toolbar"><div class="search-wrap"><span>⌕</span><input id="search" placeholder="Search titles, authors, summaries, tags…"></div><select id="sourceFilter"><option value="">All sources</option><option value="ao3">AO3</option><option value="unsorted">Unknown / Unsorted</option></select><div class="tag-picker" id="tagPicker"><select id="tagFilter" class="tag-picker-native" aria-label="Filter by detected tag" tabindex="-1"><option value="">All tags</option></select><button type="button" class="tag-picker-trigger" id="tagPickerTrigger" aria-haspopup="listbox" aria-expanded="false"><span id="tagPickerLabel">All tags</span><span aria-hidden="true">⌄</span></button><div id="tagPickerPanel" class="tag-picker-panel" hidden><input id="tagPickerSearch" type="search" autocomplete="off" placeholder="Search tags…" aria-label="Search tags"><div id="tagPickerList" class="tag-picker-list" role="listbox" aria-label="Detected tags"></div></div></div><select id="publishedFilter"><option value="">All works</option><option value="published">Published</option><option value="draft">Drafts</option></select></section><div class="list-heading"><h2>All works <span id="ficCount">0</span></h2><span id="note"></span></div><div id="library" class="library"></div><div id="empty" class="empty"><h2>No works yet</h2><p>Import your first fic to begin.</p></div></div></main>
-<dialog id="editDialog" class="edit-dialog"><form id="editForm" class="dialog-body"><button type="button" id="closeEdit" class="close" aria-label="Close">×</button><h2>Edit metadata</h2><label>Title<input id="editTitle" required></label><label>Author<input id="editAuthor"></label><label>Fandom<input id="editFandom"></label><label>Relationships (one per line)<textarea id="editRelationships" rows="2"></textarea></label><label>Characters (one per line)<textarea id="editCharacters" rows="2"></textarea></label><label>Additional tags (one per line)<textarea id="editTags" rows="3"></textarea></label><label>Warnings (one per line)<textarea id="editWarnings" rows="2"></textarea></label><label>Summary<textarea id="editSummary" rows="5"></textarea></label><label>Source<select id="editSource"><option value="ao3">AO3</option><option value="unsorted">Unknown / Unsorted</option></select></label><label>Rating<input id="editRating"></label><label>Word count<input type="number" min="0" id="editWords"></label><label><input type="checkbox" id="editPublished" style="width:auto"> Published (visible to everyone)</label><div class="action-row"><button class="primary" type="submit">Save changes</button><button type="button" class="danger" id="deleteBtn">Delete fic and file</button></div></form></dialog>
-<footer>Administration is restricted by Supabase authentication and Row Level Security.</footer></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#FAF7F5">
+  <title>The Fic Shelf · Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mammoth@1.9.1/mammoth.browser.min.js"></script>
+  <script defer src="config.js"></script>
+  <script defer src="extractor.js"></script>
+  <script defer src="admin.js"></script>
+  <script defer src="tag-picker.js"></script>
+  <script defer src="transitions.js"></script>
+</head>
+<body class="admin-page">
+  <header class="topbar">
+    <div class="logo"><span class="symbol" aria-hidden="true">✦</span>The Fic Shelf</div>
+    <span class="subhead">your little corner of the bookshelf · admin</span>
+    <a href="index.html" class="outlined small-link">Public website</a>
+    <button id="logout" type="button" class="subtle hidden">Sign out</button>
+  </header>
+
+  <main class="shell">
+    <section id="loginView" class="auth-panel" aria-labelledby="loginHeading">
+      <p class="eyebrow">ADMIN ONLY · THE FIC SHELF</p>
+      <h1 id="loginHeading">Welcome back to your shelf.</h1>
+      <p class="muted">Sign in to manage your collection, review metadata, and publish your saved stories.</p>
+      <form id="loginForm">
+        <label for="email">Email
+          <input id="email" name="email" type="email" autocomplete="username" required>
+        </label>
+        <label for="password">Password
+          <input id="password" name="password" type="password" autocomplete="current-password" required>
+        </label>
+        <button class="primary" type="submit">Sign in</button>
+      </form>
+      <p id="loginError" class="error" role="alert" aria-live="polite"></p>
+      <p class="fineprint">Access requires a Supabase account listed in the <code>admin_users</code> table.</p>
+    </section>
+
+    <div id="adminView" class="hidden">
+      <section class="hero">
+        <p class="eyebrow">ADMIN DASHBOARD · CURATE YOUR COLLECTION</p>
+        <h1>Manage your fic catalog.</h1>
+        <p>Import stories, review detected tags and summaries, edit metadata, and publish to your readers.</p>
+        <div class="hero-actions">
+          <button id="importBtn" type="button" class="primary">＋ Import fics</button>
+          <button id="folderBtn" type="button" class="outlined">Import folder</button>
+          <input id="fileInput" type="file" multiple accept=".epub,.html,.htm,.pdf,.txt,.docx" hidden>
+          <input id="folderInput" type="file" multiple webkitdirectory directory hidden>
+        </div>
+        <p class="fineprint">EPUB · PDF · HTML · TXT · DOCX · Automatic metadata detection · Supabase cloud storage</p>
+      </section>
+
+      <section id="progress" class="progress hidden" aria-live="polite">
+        <div class="progress-row">
+          <strong id="progressText">Importing...</strong>
+          <span id="progressCount"></span>
+        </div>
+        <div class="progress-track"><div id="progressFill"></div></div>
+      </section>
+      <p id="adminMessage" role="status" aria-live="polite"></p>
+
+      <section class="toolbar" aria-label="Filter your fic catalog">
+        <div class="search-wrap">
+          <span aria-hidden="true">⌕</span>
+          <input id="search" type="search" placeholder="Search titles, authors, summaries, tags…" aria-label="Search fics">
+        </div>
+
+        <select id="sourceFilter" aria-label="Filter by source">
+          <option value="">All sources</option>
+          <option value="ao3">AO3</option>
+          <option value="unsorted">Unknown / Unsorted</option>
+        </select>
+
+        <div class="tag-picker" id="tagPicker">
+          <select id="tagFilter" class="tag-picker-native" aria-label="Filter by detected tag" tabindex="-1">
+            <option value="">All tags</option>
+          </select>
+          <button type="button" class="tag-picker-trigger" id="tagPickerTrigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="tagPickerList">
+            <span id="tagPickerLabel">All tags</span>
+            <span aria-hidden="true">⌄</span>
+          </button>
+          <div id="tagPickerPanel" class="tag-picker-panel" hidden>
+            <input id="tagPickerSearch" type="search" autocomplete="off" placeholder="Search tags…" aria-label="Search tags">
+            <div id="tagPickerList" class="tag-picker-list" role="listbox" aria-label="Detected tags"></div>
+          </div>
+        </div>
+
+
+        <select id="fandomFilter" aria-label="Filter by fandom">
+          <option value="">All fandoms</option>
+        </select>
+        <select id="sort" aria-label="Sort fics">
+          <option value="title" selected>Title A–Z</option>
+          <option value="author">Author A–Z</option>
+          <option value="words">Longest first</option>
+          <option value="new">Recently added</option>
+        </select>
+
+        <select id="publishedFilter" aria-label="Filter by publication status">
+          <option value="">All works</option>
+          <option value="published">Published</option>
+          <option value="draft">Drafts</option>
+        </select>
+      </section>
+
+      <div class="list-heading">
+        <h2>All works <span id="ficCount">0</span></h2>
+        <span id="note"></span>
+      </div>
+      <div id="library" class="library"></div>
+      <div id="empty" class="empty">
+        <h2>No works yet</h2>
+        <p>Import your first fic to begin building your shelf.</p>
+      </div>
+    </div>
+  </main>
+
+  <dialog id="editDialog" class="edit-dialog" aria-labelledby="editHeading">
+    <form id="editForm" class="dialog-body">
+      <button type="button" id="closeEdit" class="close" aria-label="Close">×</button>
+      <p class="eyebrow">YOUR COLLECTION</p>
+      <h2 id="editHeading">Edit metadata</h2>
+      <label for="editTitle">Title<input id="editTitle" required></label>
+      <label for="editAuthor">Author<input id="editAuthor"></label>
+      <label for="editFandom">Fandom<input id="editFandom"></label>
+      <label for="editRelationships">Relationships (one per line)<textarea id="editRelationships" rows="2"></textarea></label>
+      <label for="editCharacters">Characters (one per line)<textarea id="editCharacters" rows="2"></textarea></label>
+      <label for="editTags">Additional tags (one per line)<textarea id="editTags" rows="3"></textarea></label>
+      <label for="editWarnings">Warnings (one per line)<textarea id="editWarnings" rows="2"></textarea></label>
+      <label for="editSummary">Summary<textarea id="editSummary" rows="5"></textarea></label>
+      <label for="editSource">Source
+        <select id="editSource">
+          <option value="ao3">AO3</option>
+          <option value="unsorted">Unknown / Unsorted</option>
+        </select>
+      </label>
+      <label for="editRating">Rating<input id="editRating"></label>
+      <label for="editWords">Word count<input type="number" min="0" id="editWords"></label>
+      <label><input type="checkbox" id="editPublished" style="width:auto"> Published (visible to everyone)</label>
+      <div class="action-row">
+        <button class="primary" type="submit">Save changes</button>
+        <button type="button" class="danger" id="deleteBtn">Delete fic and file</button>
+      </div>
+    </form>
+  </dialog>
+
+  <footer>
+    <p>Made with ♡ for The Fic Shelf · Private administration</p>
+    <p>Access is protected by Supabase authentication and Row Level Security.</p>
+  </footer>
+</body>
+</html>

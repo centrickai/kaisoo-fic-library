@@ -3,7 +3,7 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const cfg=window.FIC_SHELF_CONFIG;
 let client, fics=[], editId=null, importing=false;
-const showMessage=(message,bad=false)=>{const p=$('adminMessage');p.textContent=message;p.style.color=bad?'#9c3333':'#765c8a'};
+const showMessage=(message,bad=false)=>{const p=$('adminMessage');p.textContent=message;p.style.color=bad?'#9c3333':'var(--accent)'};
 const list=v=>String(v||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
 
 // Build a live tag selector from the records returned by Supabase.
@@ -48,11 +48,35 @@ function matchesSelectedTag(fic) {
  } catch { return true; }
 }
 
-function render(){const q=$('search').value.toLowerCase(),filter=$('publishedFilter').value,source=$('sourceFilter').value;
- const rows=fics.filter(f=>(!q||[f.title,f.author,f.summary,f.fandom,...(f.tags||[]),...(f.relationships||[])].join(' ').toLowerCase().includes(q))&&(!filter||(filter==='published'?f.published:!f.published))&&(!source||(f.source_type||'unsorted')===source)&&matchesSelectedTag(f));
- $('ficCount').textContent=rows.length;$('note').textContent=`${fics.length} total`;
- $('library').innerHTML=rows.map(f=>`<article class="fic-card admin-card"><div class="card-top"><span class="fandom">${esc(f.fandom||'Fanfiction')}</span><span class="status">${(f.source_type||'unsorted')==='ao3'?'AO3':'Unknown / Unsorted'} · ${f.published?'Published':'Draft'}</span></div><h3>${esc(f.title)}</h3><div class="byline">by ${esc(f.author||'Unknown author')}</div><p class="card-summary">${esc(f.summary||'No summary detected.')}</p><div class="admin-actions"><button class="outlined" data-edit="${esc(f.id)}">Edit metadata</button><button class="subtle" data-publish="${esc(f.id)}">${f.published?'Unpublish':'Publish'}</button></div></article>`).join('');$('empty').classList.toggle('hidden',rows.length>0);
+function render(){
+ const q=$('search').value.trim().toLowerCase();
+ const status=$('publishedFilter').value;
+ const source=$('sourceFilter').value;
+ const fandom=$('fandomFilter').value;
+ const sort=$('sort').value;
+ const fandoms=[...new Set(fics.map(f=>f.fandom).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{sensitivity:'base'}));
+ const fandomSelect=$('fandomFilter');
+ // Regenerate dynamically while preserving the current selection.
+ fandomSelect.replaceChildren(new Option('All fandoms',''),...fandoms.map(name=>new Option(name,name)));
+ fandomSelect.value=fandoms.includes(fandom)?fandom:'';
+ const rows=fics.filter(f=>
+  (!q||[f.title,f.author,f.summary,f.fandom,...(f.tags||[]),...(f.relationships||[]),...(f.characters||[]),...(f.warnings||[])].join(' ').toLowerCase().includes(q))&&
+  (!status||(status==='published'?!!f.published:!f.published))&&
+  (!source||(f.source_type||'unsorted')===source)&&
+  (!fandomSelect.value||f.fandom===fandomSelect.value)&&matchesSelectedTag(f)
+ );
+ rows.sort((a,b)=>{
+  if(sort==='title')return (a.title||'').localeCompare(b.title||'',undefined,{sensitivity:'base'});
+  if(sort==='author')return (a.author||'').localeCompare(b.author||'',undefined,{sensitivity:'base'});
+  if(sort==='words')return (Number(b.words)||0)-(Number(a.words)||0);
+  return new Date(b.created_at||0)-new Date(a.created_at||0);
+ });
+ $('ficCount').textContent=rows.length;
+ $('note').textContent=`${fics.length} total`;
+ $('library').innerHTML=rows.map(f=>`<article class="fic-card admin-card"><div class="card-top"><span class="fandom">${esc(f.fandom||'Fanfiction')}</span><span class="status">${(f.source_type||'unsorted')==='ao3'?'AO3':'Unknown / Unsorted'} · ${f.published?'Published':'Draft'}</span></div><h3>${esc(f.title)}</h3><div class="byline">by ${esc(f.author||'Unknown author')}</div><p class="card-summary">${esc(f.summary||'No summary detected.')}</p><div class="admin-actions"><button class="outlined" data-edit="${esc(f.id)}">Edit metadata</button><button class="subtle" data-publish="${esc(f.id)}">${f.published?'Unpublish':'Publish'}</button></div></article>`).join('');
+ $('empty').classList.toggle('hidden',rows.length>0);
 }
+
 async function refresh(){const {data,error}=await client.from('fics').select('*').order('created_at',{ascending:false}).limit(1000);if(error)throw error;fics=data||[];refreshTagOptions();render()}
 async function guard(){const {data:{user},error}=await client.auth.getUser();if(error||!user)return false;const {data,error:adminError}=await client.from('admin_users').select('user_id').eq('user_id',user.id).maybeSingle();return !adminError&&!!data}
 async function setAuth(){const allowed=await guard();$('loginView').classList.toggle('hidden',allowed);$('adminView').classList.toggle('hidden',!allowed);$('logout').classList.toggle('hidden',!allowed);if(allowed){await refresh()}return allowed}
@@ -93,7 +117,7 @@ async function init(){try{if(!cfg||cfg.url.includes('YOUR-PROJECT')||cfg.publish
  $('logout').onclick=async()=>{await client.auth.signOut();await setAuth()};
  $('importBtn').onclick=()=>$('fileInput').click();$('folderBtn').onclick=()=>$('folderInput').click();
  $('fileInput').onchange=e=>{importFiles(e.target.files);e.target.value=''};$('folderInput').onchange=e=>{importFiles(e.target.files);e.target.value=''};
- $('search').oninput=render;$('publishedFilter').onchange=render;$('sourceFilter').onchange=render;$('tagFilter').onchange=render;
+ $('search').oninput=render;$('publishedFilter').onchange=render;$('sourceFilter').onchange=render;$('tagFilter').onchange=render;$('fandomFilter').onchange=render;$('sort').onchange=render;
  $('library').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.edit)edit(b.dataset.edit);if(b.dataset.publish)togglePublish(b.dataset.publish)};
  $('editForm').onsubmit=saveEdit;$('closeEdit').onclick=()=>$('editDialog').close();$('deleteBtn').onclick=deleteFic;
 }
