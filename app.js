@@ -113,7 +113,16 @@ function render(){
  const fs=[...new Set(fics.map(f=>f.fandom).filter(Boolean))].sort();
  $('fandomFilter').innerHTML='<option value="">All fandoms</option>'+fs.map(f=>`<option value="${esc(f)}">${esc(f)}</option>`).join('');$('fandomFilter').value=selected;
  const filtered=fics.filter(f=>(!onlySaved||isSaved(f.id))&&(!selected||f.fandom===selected)&&(!source||(f.source_type||'unsorted')===source)&&matchesSelectedTag(f)&&(!q||[f.title,f.author,f.summary,f.fandom,...arr(f.relationships),...arr(f.characters),...arr(f.tags)].join(' ').toLowerCase().includes(q)));
- const sort=$('sort').value;filtered.sort((a,b)=>sort==='title'?a.title.localeCompare(b.title):sort==='author'?(a.author||'').localeCompare(b.author||''):sort==='words'?(b.words||0)-(a.words||0):new Date(b.created_at)-new Date(a.created_at));
+ const sort=$('sort').value;
+  filtered.sort((a,b)=>{
+    if(sort==='title') return (a.title||'').localeCompare(b.title||'');
+    if(sort==='author') return (a.author||'').localeCompare(b.author||'');
+    if(sort==='words') return (Number(b.words)||0)-(Number(a.words)||0);
+    // "Recently added" uses the Supabase created_at timestamp, newest first.
+    const dateB = Date.parse(b.created_at)||0;
+    const dateA = Date.parse(a.created_at)||0;
+    return dateB-dateA;
+  });
  $('ficCount').textContent=filtered.length;$('note').textContent=`${fics.length} published works`;
  $('library').innerHTML=filtered.map(f=>`<div class="fic-card" tabindex="0" role="button" data-id="${esc(f.id)}" aria-label="View details for ${esc(f.title)}"><div class="card-top"><span class="fandom">${esc(f.fandom||f.format||'Fanfiction')}</span><div class="card-badges"><span class="status">${(f.source_type||'unsorted')==='ao3'?'AO3':'Unknown / Unsorted'}</span><button type="button" class="card-save ${isSaved(f.id)?'is-saved':''}" data-save-id="${esc(f.id)}" aria-label="${isSaved(f.id)?'Remove from':'Add to'} reading list" aria-pressed="${isSaved(f.id)}">${isSaved(f.id)?'♥':'♡'}</button></div></div><h3>${esc(f.title)}</h3><div class="byline">by ${esc(f.author||'Unknown author')}</div><p class="card-summary">${esc(f.summary||'No summary provided.')}</p><div class="tags">${tags(f)}</div><div class="card-bottom"><span>${count(f.words)} words${downloaded(f.id)?' · ✓ Downloaded':''}</span><span>${esc((f.format||'').toUpperCase())}</span></div></div>`).join('');
  renderReaderTools();
