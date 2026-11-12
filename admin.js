@@ -3,6 +3,7 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const cfg=window.FIC_SHELF_CONFIG;
 let client, fics=[], editId=null, importing=false;
+let selectedFicIds = new Set(), bulkBusy = false;
 const showMessage=(message,bad=false)=>{const p=$('adminMessage');p.textContent=message;p.style.color=bad?'#9c3333':'var(--accent)'};
 const list=v=>String(v||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
 
@@ -73,11 +74,101 @@ function render(){
  });
  $('ficCount').textContent=rows.length;
  $('note').textContent=`${fics.length} total`;
- $('library').innerHTML=rows.map(f=>`<article class="fic-card admin-card"><div class="card-top"><span class="fandom">${esc(f.fandom||'Fanfiction')}</span><span class="status">${(f.source_type||'unsorted')==='ao3'?'AO3':'Unknown / Unsorted'} · ${f.published?'Published':'Draft'}</span></div><h3>${esc(f.title)}</h3><div class="byline">by ${esc(f.author||'Unknown author')}</div><p class="card-summary">${esc(f.summary||'No summary detected.')}</p><div class="admin-actions"><button class="outlined" data-edit="${esc(f.id)}">Edit metadata</button><button class="subtle" data-publish="${esc(f.id)}">${f.published?'Unpublish':'Publish'}</button></div></article>`).join('');
+ $('library').innerHTML=rows.map(f=>`<article class="fic-card admin-card"><div class="card-top"><label style="display:flex;align-items:center;gap:8px;margin:0;"><input type="checkbox" class="fic-select" data-select-fic="${esc(f.id)}" aria-label="Select ${esc(f.title)}" style="width:auto;" ${selectedFicIds.has(String(f.id))?'checked':''}><span class="fandom">${esc(f.fandom||'Fanfiction')}</span></label><span class="status">${(f.source_type||'unsorted')==='ao3'?'AO3':'Unknown / Unsorted'} · ${f.published?'Published':'Draft'}</span></div><h3>${esc(f.title)}</h3><div class="byline">by ${esc(f.author||'Unknown author')}</div><p class="card-summary">${esc(f.summary||'No summary detected.')}</p><div class="admin-actions"><button class="outlined" data-edit="${esc(f.id)}">Edit metadata</button><button class="subtle" data-publish="${esc(f.id)}">${f.published?'Unpublish':'Publish'}</button></div></article>`).join('');
  $('empty').classList.toggle('hidden',rows.length>0);
+ updateBulkControls(rows);
 }
 
-async function refresh(){const {data,error}=await client.from('fics').select('*').order('created_at',{ascending:false}).limit(1000);if(error)throw error;fics=data||[];refreshTagOptions();render()}
+function updateBulkControls(visibleRows = []) {
+ const visibleIds = visibleRows.map(f => String(f.id));
+ const selectedVisible = visibleIds.filter(id => selectedFicIds.has(id)).length;
+ const selectAll = $('selectAllVisible');
+ selectAll.checked = visibleIds.length > 0 && selectedVisible === visibleIds.length;
+ selectAll.indeterminate = selectedVisible > 0 && selectedVisible < visibleIds.length;
+ $('selectedCount').textContent = `${selectedFicIds.size} selected`;
+ const hasSelection = selectedFicIds.size > 0;
+ $('bulkPublishBtn').disabled = !hasSelection || bulkBusy;
+ $('bulkDeleteBtn').disabled = !hasSelection || bulkBusy;
+ $('clearSelectionBtn').disabled = !hasSelection || bulkBusy;
+ selectAll.disabled = visibleIds.length === 0 || bulkBusy;
+ $('bulkPublishBtn').textContent = bulkBusy ? 'Working…' : 'Publish selected';
+ $('bulkDeleteBtn').textContent = bulkBusy ? 'Working…' : 'Delete selected';
+}
+
+function selectedFics() {
+ const ids = new Set([...selectedFicIds].map(String));
+ return fics.filter(f => ids.has(String(f.id)));
+}
+
+function clearSelection() {
+ selectedFicIds.clear();
+ render();
+}
+
+async function bulkPublish() {
+ const targets = selectedFics();
+ if (!targets.length || bulkBusy) return;
+ const toPublish = targets.filter(f => !f.published);
+ if (!toPublish.length) {
+   showMessage('All selected fics are already published.');
+   return;
+ }
+ if (!confirm(`Publish ${toPublish.length} selected fic${toPublish.length===1?'':'s'}? They will become visible on the public website.`)) return;
+
+ bulkBusy = true;
+ updateBulkControls();
+ try {
+   const ids = toPublish.map(f => f.id);
+   const { error } = await client.from('fics').update({ published: true }).in('id', ids);
+   if (error) throw error;
+   selectedFicIds.clear();
+   showMessage(`${toPublish.length} fic${toPublish.length===1?'':'s'} published successfully.`);
+   await refresh();
+ } catch (error) {
+   showMessage(`Bulk publish failed: ${error.message}`, true);
+ } finally {
+   bulkBusy = false;
+   updateBulkControls();
+ }
+}
+
+async function bulkDelete() {
+ const targets = selectedFics();
+ if (!targets.length || bulkBusy) return;
+ const count = targets.length;
+ if (!confirm(`Permanently delete ${count} selected fic${count===1?'':'s'} and their uploaded files? This cannot be undone.`)) return;
+
+ bulkBusy = true;
+ updateBulkControls();
+ try {
+   const ids = targets.map(f => f.id);
+   // Delete database rows first so deleted works cannot remain visible publicly.
+   const { error } = await client.from('fics').delete().in('id', ids);
+   if (error) throw error;
+
+   selectedFicIds.clear();
+   const paths = targets.map(f => f.file_path).filter(Boolean);
+   let fileError = null;
+   if (paths.length) {
+     const { error: storageError } = await client.storage.from(cfg.bucket).remove(paths);
+     fileError = storageError;
+   }
+
+   await refresh();
+   if (fileError) {
+     showMessage(`${count} database record${count===1?'':'s'} deleted, but some uploaded files could not be removed: ${fileError.message}`, true);
+   } else {
+     showMessage(`${count} fic${count===1?'':'s'} and uploaded file${count===1?'':'s'} deleted.`);
+   }
+ } catch (error) {
+   showMessage(`Bulk delete failed: ${error.message}`, true);
+ } finally {
+   bulkBusy = false;
+   updateBulkControls();
+ }
+}
+
+async function refresh(){const {data,error}=await client.from('fics').select('*').order('created_at',{ascending:false}).limit(1000);if(error)throw error;fics=data||[];const existingIds=new Set(fics.map(f=>String(f.id)));selectedFicIds=new Set([...selectedFicIds].filter(id=>existingIds.has(String(id))));refreshTagOptions();render()}
 async function guard(){const {data:{user},error}=await client.auth.getUser();if(error||!user)return false;const {data,error:adminError}=await client.from('admin_users').select('user_id').eq('user_id',user.id).maybeSingle();return !adminError&&!!data}
 async function setAuth(){const allowed=await guard();$('loginView').classList.toggle('hidden',allowed);$('adminView').classList.toggle('hidden',!allowed);$('logout').classList.toggle('hidden',!allowed);if(allowed){await refresh()}return allowed}
 async function hashFile(file){const digest=await crypto.subtle.digest('SHA-256',await file.arrayBuffer());return [...new Uint8Array(digest)].map(x=>x.toString(16).padStart(2,'0')).join('')}
@@ -118,7 +209,29 @@ async function init(){try{if(!cfg||cfg.url.includes('YOUR-PROJECT')||cfg.publish
  $('importBtn').onclick=()=>$('fileInput').click();$('folderBtn').onclick=()=>$('folderInput').click();
  $('fileInput').onchange=e=>{importFiles(e.target.files);e.target.value=''};$('folderInput').onchange=e=>{importFiles(e.target.files);e.target.value=''};
  $('search').oninput=render;$('publishedFilter').onchange=render;$('sourceFilter').onchange=render;$('tagFilter').onchange=render;$('fandomFilter').onchange=render;$('sort').onchange=render;
- $('library').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.edit)edit(b.dataset.edit);if(b.dataset.publish)togglePublish(b.dataset.publish)};
+ $('library').onclick=e=>{
+   const checkbox=e.target.closest('[data-select-fic]');
+   if(checkbox){
+     const id=String(checkbox.dataset.selectFic);
+     if(checkbox.checked)selectedFicIds.add(id);else selectedFicIds.delete(id);
+     updateBulkControls([...$('library').querySelectorAll('[data-select-fic]')].map(input=>fics.find(f=>String(f.id)===String(input.dataset.selectFic))).filter(Boolean));
+     return;
+   }
+   const b=e.target.closest('button');if(!b)return;
+   if(b.dataset.edit)edit(b.dataset.edit);
+   if(b.dataset.publish)togglePublish(b.dataset.publish);
+ };
+ $('selectAllVisible').onchange=e=>{
+   const visible=[...$('library').querySelectorAll('[data-select-fic]')];
+   for(const input of visible){
+     const id=String(input.dataset.selectFic);
+     if(e.target.checked)selectedFicIds.add(id);else selectedFicIds.delete(id);
+   }
+   render();
+ };
+ $('bulkPublishBtn').onclick=bulkPublish;
+ $('bulkDeleteBtn').onclick=bulkDelete;
+ $('clearSelectionBtn').onclick=clearSelection;
  $('editForm').onsubmit=saveEdit;$('closeEdit').onclick=()=>$('editDialog').close();$('deleteBtn').onclick=deleteFic;
 }
 document.addEventListener('DOMContentLoaded',init);

@@ -117,6 +117,16 @@
         <h2>All works <span id="ficCount">0</span></h2>
         <span id="note"></span>
       </div>
+      <section id="bulkToolbar" class="toolbar" aria-label="Bulk fic actions" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0;">
+        <label style="display:flex;align-items:center;gap:8px;margin:0;">
+          <input id="selectAllVisible" type="checkbox" style="width:auto;">
+          Select all visible
+        </label>
+        <span id="selectedCount" class="muted" aria-live="polite">0 selected</span>
+        <button id="bulkPublishBtn" type="button" class="primary" disabled>Publish selected</button>
+        <button id="bulkDeleteBtn" type="button" class="danger" disabled>Delete selected</button>
+        <button id="clearSelectionBtn" type="button" class="subtle" disabled>Clear selection</button>
+      </section>
       <div id="library" class="library"></div>
       <div id="empty" class="empty">
         <h2>No works yet</h2>
